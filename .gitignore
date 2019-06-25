@@ -1,0 +1,16 @@
+*.swp
+*.swo
+*.vpc
+*.pyc
+__pycache__
+*.egg-info
+.cache/
+.pytest_cache
+dist
+build
+.~c9*
+.cache
+.coverage
+.coverage.*
+docs/_build
+tmp
