@@ -31,7 +31,7 @@ def list_users(region, account):
 
 def list_loginprofiles(region, account):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler-payloads.iam.list_loginprofiles 
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.list_loginprofiles 
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     response = client.list_users()
@@ -51,3 +51,56 @@ def list_loginprofiles(region, account):
                 continue
     return dict(LoginProfiles=login_profiles)
 
+
+def get_account_password_policy(region, account):
+    '''
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.get_account_password_policy 
+    '''
+    client = boto3.client('iam', region_name=region, **account.credentials)
+    try:
+        response = client.get_account_password_policy()
+        response.pop('ResponseMetadata')
+        return response
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchEntity':
+            return dict(PasswordPolicy={})
+        else:
+            print("Error Code %s \n"  % e.response['Error']['Code'])
+            return dict(PasswordPolicy={})
+
+
+def update_account_password_policy(region, account):
+    '''
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.update_account_password_policy 
+    '''
+    cis_standard = {
+        'MinimumPasswordLength': 14,
+        'RequireSymbols': True,
+        'RequireNumbers': True,
+        'RequireUppercaseCharacters': True,
+        'RequireLowercaseCharacters': True,
+        'AllowUsersToChangePassword': True,
+        'MaxPasswordAge': 90,
+        'PasswordReusePrevention': 24,
+        'HardExpiry': False,
+    }
+    client = boto3.client('iam', region_name=region, **account.credentials)
+    try:
+        response = client.update_account_password_policy(**cis_standard)
+        return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
+    except ClientError as e:
+        e.response.pop('ResponseMetadata')
+        return e.response
+
+
+def delete_account_password_policy(region, account):
+    '''
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.delete_account_password_policy 
+    '''
+    client = boto3.client('iam', region_name=region, **account.credentials)
+    try:
+        response = client.delete_account_password_policy()
+        return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
+    except ClientError as e:
+        e.response.pop('ResponseMetadata')
+        return e.response
