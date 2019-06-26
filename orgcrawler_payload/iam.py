@@ -65,8 +65,8 @@ def get_account_password_policy(region, account):
         if e.response['Error']['Code'] == 'NoSuchEntity':
             return dict(PasswordPolicy={})
         else:
-            print("Error Code %s \n"  % e.response['Error']['Code'])
-            return dict(PasswordPolicy={})
+            e.response.pop('ResponseMetadata')
+            return e.response
 
 
 def update_account_password_policy(region, account):
