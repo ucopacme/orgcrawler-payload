@@ -69,7 +69,7 @@ def get_account_password_policy(region, account):
             return e.response
 
 
-def update_account_password_policy(region, account):
+def update_account_password_policy(region, account, kwargs=None):
     '''
     orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.update_account_password_policy 
     '''
@@ -85,8 +85,10 @@ def update_account_password_policy(region, account):
         'HardExpiry': False,
     }
     client = boto3.client('iam', region_name=region, **account.credentials)
+    if kwargs is not None:
+        kwargs = cis_standard
     try:
-        response = client.update_account_password_policy(**cis_standard)
+        response = client.update_account_password_policy(**kwargs)
         return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
     except ClientError as e:
         e.response.pop('ResponseMetadata')
