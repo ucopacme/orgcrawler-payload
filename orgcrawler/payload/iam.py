@@ -18,7 +18,7 @@ def get_account_aliases(region, account):
 
 def list_users(region, account):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.list_users
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.payload.iam.list_users
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     response = client.list_users()
@@ -31,7 +31,7 @@ def list_users(region, account):
 
 def list_loginprofiles(region, account):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.list_loginprofiles 
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.payload.iam.list_loginprofiles 
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     response = client.list_users()
@@ -54,7 +54,7 @@ def list_loginprofiles(region, account):
 
 def get_account_password_policy(region, account):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.get_account_password_policy 
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.payload.iam.get_account_password_policy 
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     try:
@@ -71,21 +71,21 @@ def get_account_password_policy(region, account):
 
 def update_account_password_policy(region, account, kwargs=None):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.update_account_password_policy 
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.payload.iam.update_account_password_policy --account Auth
     '''
     cis_standard = {
-        'MinimumPasswordLength': 14,
+        'MinimumPasswordLength': 8,
         'RequireSymbols': True,
         'RequireNumbers': True,
         'RequireUppercaseCharacters': True,
         'RequireLowercaseCharacters': True,
         'AllowUsersToChangePassword': True,
-        'MaxPasswordAge': 90,
+        'MaxPasswordAge': 180,
         'PasswordReusePrevention': 24,
         'HardExpiry': False,
     }
     client = boto3.client('iam', region_name=region, **account.credentials)
-    if kwargs is not None:
+    if kwargs is None:
         kwargs = cis_standard
     try:
         response = client.update_account_password_policy(**kwargs)
@@ -97,7 +97,7 @@ def update_account_password_policy(region, account, kwargs=None):
 
 def delete_account_password_policy(region, account):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler_payload.iam.delete_account_password_policy 
+    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.payload.iam.delete_account_password_policy 
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     try:

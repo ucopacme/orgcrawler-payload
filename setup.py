@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import io
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
 
-# gather the package's long description from the README
-with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = '\n' + f.read()
+VERSION = '0.0.0'
+LONGDESC = '''
+OrgCrawler Payloads
+===================
 
-# load the package's __init__.py module as a dictionary.
-about = {}
-with open(os.path.join(here, 'orgcrawler_payload/__init__.py')) as f:
-    exec(f.read(), about)
+A library of orgcrawler payload functions.
+
+See full documentation at https://blle.blkje.com/index.html
+'''
+
 
 setup(
-    name='orgcrawler_payload',
-    version=about['__version__'],
+    name='orgcrawler.payload',
+    version=VERSION,
     description='A library of orgcrawler payload functions',
-    long_description=long_description,
+    long_description=LONGDESC,
     long_description_content_type='text/x-rst',
     url='https://github.com/ucopacme/orgcrawler-payload',
     keywords='aws organizations boto3 orgcrawler',
@@ -39,10 +38,8 @@ setup(
         'botocore',
         'boto3',
         'orgcrawler',
-        #'PyYAML',
-        #click',
     ],
-    packages=find_packages(exclude=['dist', 'test']),
-    include_package_data=True,
+    packages=find_namespace_packages(include=['orgcrawler.*']),
     zip_safe=False,
+
 )
