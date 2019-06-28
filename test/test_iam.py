@@ -5,7 +5,7 @@ from moto import (
     mock_iam,
 )
 
-from orgcrawler import payloads
+from orgcrawler.payload import iam
 from orgcrawler.utils import yamlfmt
 from orgcrawler.cli.utils import setup_crawler
 from .utils import (
@@ -25,7 +25,7 @@ def test_iam_list_users():
     region = crawler.regions[0]
     client = boto3.client('iam', region_name=region, **account.credentials)
     client.create_user(UserName='test_user')
-    response = payloads.iam_list_users(region, account)
+    response = iam.list_users(region, account)
     assert response['Users'][0]['UserName'] == 'test_user'
 
 
@@ -37,9 +37,9 @@ def test_get_set_account_aliases():
     crawler = setup_crawler(ORG_ACCESS_ROLE)
     account = crawler.accounts[0]
     region = crawler.regions[0]
-    response = payloads.set_account_alias(region, account)
-    response = payloads.get_account_aliases(region, account)
+    response = iam.set_account_alias(region, account)
+    response = iam.get_account_aliases(region, account)
     assert response['Aliases'] == account.name
-    response = payloads.set_account_alias(region, account, alias='test_alias')
-    response = payloads.get_account_aliases(region, account)
+    response = iam.set_account_alias(region, account, alias='test_alias')
+    response = iam.get_account_aliases(region, account)
  
