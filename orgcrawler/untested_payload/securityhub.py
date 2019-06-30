@@ -42,6 +42,6 @@ def securityhub_is_enabled(region, account):
     client = boto3.client('securityhub', region_name=region, **account.credentials)
     try:
         client.get_enabled_standards()
-    except client.exceptions.InvalidAccessException as e:
+        return dict(SecurityHubStatus=dict(Enabled=True))
+    except client.exceptions.InvalidAccessException:
         return dict(SecurityHubStatus=dict(Enabled=False))
-    return dict(SecurityHubStatus=dict(Enabled=True))
