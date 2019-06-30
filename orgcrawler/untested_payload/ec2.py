@@ -19,4 +19,3 @@ def list_vpn_gateways(region, account):
     response = client.describe_vpn_gateways()
     response.pop('ResponseMetadata')
     return response
-
