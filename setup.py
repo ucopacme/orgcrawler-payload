@@ -4,16 +4,14 @@
 from setuptools import setup, find_namespace_packages
 
 
-VERSION = '0.0.0'
+VERSION = '0.0.1.dev0'
 LONGDESC = '''
 OrgCrawler Payloads
 ===================
 
-A library of orgcrawler payload functions.
+A library of currated orgcrawler payload functions.
 
-See full documentation at https://blle.blkje.com/index.html
 '''
-
 
 setup(
     name='orgcrawler.payload',
