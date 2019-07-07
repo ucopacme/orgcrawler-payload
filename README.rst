@@ -3,7 +3,7 @@ OrgCrawler Payloads
 
 A library of curated OrgCrawler payload functions.
 
-orgcrawler-payload is a sub-package within the `OrgCrawler`_ name space.  See
+orgcrawler-payload is a sub-package within the OrgCrawler_ name space.  See
 the `Orgcrawler Readthedocs`_ page for full documentation of the OrgCrawler
 suite of tools.
 
@@ -21,7 +21,9 @@ Package Organization
 
 **orgcrawler.payload**
   The modules in ``orgcrawler.payload`` contain fully tested and supported
-  payload functions divided according to AWS service::
+  payload functions divided according to AWS service.
+
+  ::
   
     orgcrawler/payload/
                       /iam.py
@@ -36,7 +38,10 @@ Package Organization
   support a particular AWS API.  In time we expect to migrate them into the 
   ``orgcrawler.payload`` collection.
 
-  **WARNING!!** These functions are **NOT** supported.  Use at your own risk::
+  **WARNING!!** Functions in ``orgcrawler.untested_payload`` are **NOT**
+  supported.  Use at your own risk.
+  
+  ::
 
     orgcrawler/untested_payload/
                                /iam.py
@@ -45,6 +50,11 @@ Package Organization
                                /cloudformation.py
                                /ec2.py
                                /config.py
+
+
+.. _OrgCrawler: https://github.com/ucopacme/orgcrawler
+.. _`OrgCrawler Readthedocs`: https://orgcrawler.readthedocs.io/en/latest/
+.. _Moto: https://github.com/spulec/moto
 
 
 Calling OrgCrawler payload functions
@@ -189,9 +199,4 @@ instance and pass them to the payload function::
       response = iam.set_account_alias(region, account)
 
 
-
-.. Links
-.. _`OrgCrawler`: https://github.com/ucopacme/orgcrawler
-.. _`OrgCrawler Readthedocs`: https://orgcrawler.readthedocs.io/en/latest/
-.. _Moto: https://github.com/spulec/moto
 .. _Pytest: https://docs.pytest.org/en/latest/
