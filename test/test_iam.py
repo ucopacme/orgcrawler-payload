@@ -5,21 +5,19 @@ from moto import (
     mock_iam,
 )
 
-from orgcrawler.payload import iam
-from orgcrawler.utils import yamlfmt
 from orgcrawler.cli.utils import setup_crawler
-from .utils import (
+from orgcrawler.mock.org import (
+    MockOrganization,
     ORG_ACCESS_ROLE,
-    SIMPLE_ORG_SPEC,
-    build_mock_org,
 )
+from orgcrawler.payload import iam
 
 
 @mock_sts
 @mock_organizations
 @mock_iam
-def test_iam_list_users():
-    org_id, root_id = build_mock_org(SIMPLE_ORG_SPEC)
+def test_list_users():
+    MockOrganization().simple()
     crawler = setup_crawler(ORG_ACCESS_ROLE)
     account = crawler.accounts[0]
     region = crawler.regions[0]
@@ -33,13 +31,19 @@ def test_iam_list_users():
 @mock_organizations
 @mock_iam
 def test_get_set_account_aliases():
-    org_id, root_id = build_mock_org(SIMPLE_ORG_SPEC)
+    MockOrganization().simple()
     crawler = setup_crawler(ORG_ACCESS_ROLE)
     account = crawler.accounts[0]
     region = crawler.regions[0]
     response = iam.set_account_alias(region, account)
-    response = iam.get_account_aliases(region, account)
-    assert response['Aliases'] == account.name
-    response = iam.set_account_alias(region, account, alias='test_alias')
-    response = iam.get_account_aliases(region, account)
- 
+    assert 'Dryrun' in response
+    response = iam.get_account_alias(region, account)
+    assert response['Alias'] == ''
+    response = iam.set_account_alias(region, account, dryrun=False)
+    assert response['HTTPStatusCode'] == 200
+    response = iam.get_account_alias(region, account)
+    assert response['Alias'] == account.name
+    response = iam.set_account_alias(region, account, dryrun=False, alias='fluffy')
+    assert response['HTTPStatusCode'] == 200
+    response = iam.get_account_alias(region, account)
+    assert response['Alias'] == 'fluffy'

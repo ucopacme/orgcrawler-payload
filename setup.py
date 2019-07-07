@@ -4,13 +4,41 @@
 from setuptools import setup, find_namespace_packages
 
 
-VERSION = '0.0.1.dev0'
+VERSION = '0.0.1.'
 LONGDESC = '''
 OrgCrawler Payloads
 ===================
 
-A library of currated orgcrawler payload functions.
+A library of curated orgcrawler payload functions.
 
+orgcrawler-payload is a sub-package within the `OrgCrawler`_ namespace.  See
+the `Orgcrawler Readthedocs`_ page for full documentation of the OrgCrawler
+suite of tools.
+
+
+Installation
+------------
+
+::
+
+  pip install orgcrawler-payload
+
+
+Package Organization
+--------------------
+
+**orgcrawler.payload**
+  The modules in ``orgcrawler.payload`` contain fully tested and supported
+  payload functions divided accourding to AWS service
+
+**orgcrawler.untested_payload**
+  The modules in ``orgcrawler.untested_payload`` contain untested or
+  experimental payload functions.  Many of these functions lack unittests only
+  because the `Moto`_ library we use to mock AWS Services does not yet
+  support a particular AWS API.  In time we expect to migrate them into the 
+  ``orgcrawler.payload`` collection.
+
+  **WARNING!!** These functions are **NOT** supported.  Use at your own risk::
 '''
 
 setup(

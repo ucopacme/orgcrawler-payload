@@ -4,7 +4,7 @@ from botocore.exceptions import ClientError
 
 def list_loginprofiles(region, account):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.untested_payload.iam.list_loginprofiles
+    orgcrawler -r OrganizationAccountAccessRole --service iam orgcrawler.untested_payload.iam.list_loginprofiles
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     response = client.list_users()
@@ -25,9 +25,9 @@ def list_loginprofiles(region, account):
     return dict(LoginProfiles=login_profiles)
 
 
-def get_account_password_policy(region, account):
+def get_account_password_policy(region, account, *args, **kwargs):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.untested_payload.iam.get_account_password_policy
+    orgcrawler -r OrganizationAccountAccessRole --service iam orgcrawler.untested_payload.iam.get_account_password_policy
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
     try:
@@ -42,9 +42,14 @@ def get_account_password_policy(region, account):
             return e.response
 
 
-def update_account_password_policy(region, account, kwargs=None):
+def update_account_password_policy(region, account, dryrun=True, policy_attributes=None):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.untested_payload.iam.update_account_password_policy --account Auth
+    orgcrawler -r OrganizationAccountAccessRole --service iam orgcrawler.untested_payload.iam.update_account_password_policy True
+    '''
+    client = boto3.client('iam', region_name=region, **account.credentials)
+    '''
+    print('dryrun:',dryrun)
+    print('policy_attributes:',policy_attributes)
     '''
     cis_standard = {
         'MinimumPasswordLength': 8,
@@ -57,25 +62,34 @@ def update_account_password_policy(region, account, kwargs=None):
         'PasswordReusePrevention': 24,
         'HardExpiry': False,
     }
-    client = boto3.client('iam', region_name=region, **account.credentials)
-    if kwargs is None:
-        kwargs = cis_standard
-    try:
-        response = client.update_account_password_policy(**kwargs)
-        return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
-    except ClientError as e:
-        e.response.pop('ResponseMetadata')
-        return e.response
+    if policy_attributes is None:
+        policy_attributes = cis_standard
+    if dryrun is True:
+        current_state = get_account_password_policy(region, account)
+        return dict(Dryrun={
+            'CurrentPasswordPolicy': current_state.get('PasswordPolicy'),
+            'ProposedPasswordPolicy': policy_attributes,
+        })
+    else:
+        try:
+            response = client.update_account_password_policy(**policy_attributes)
+            return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
+        except ClientError as e:
+            e.response.pop('ResponseMetadata')
+            return e.response
 
 
-def delete_account_password_policy(region, account):
+def delete_account_password_policy(region, account, dryrun=True):
     '''
-    orgcrawler -r awsauth/OrgAdmin --service iam orgcrawler.untested_payload.iam.delete_account_password_policy
+    orgcrawler -r OrganizationAccountAccessRole --service iam orgcrawler.untested_payload.iam.delete_account_password_policy
     '''
     client = boto3.client('iam', region_name=region, **account.credentials)
-    try:
-        response = client.delete_account_password_policy()
-        return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
-    except ClientError as e:
-        e.response.pop('ResponseMetadata')
-        return e.response
+    if dryrun:
+        return dict(Dryrun='No action')
+    else:
+        try:
+            response = client.delete_account_password_policy()
+            return dict(HTTPStatusCode=response['ResponseMetadata']['HTTPStatusCode'])
+        except ClientError as e:
+            e.response.pop('ResponseMetadata')
+            return e.response

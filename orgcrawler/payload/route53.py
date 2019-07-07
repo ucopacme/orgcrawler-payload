@@ -2,6 +2,13 @@ import boto3
 
 
 def list_hosted_zones(region, account):
+    '''
+    Returns listing of Route53 HostedZones together with
+    all configure ResourceRecord sets.
+
+    Usage:
+      orgcrawler -r ReadOnlyRole --service route53 orgcrawler.payload.route53.list_hosted_zones
+    '''
     client = boto3.client('route53', region_name=region, **account.credentials)
     response = client.list_hosted_zones()
     hosted_zones = []

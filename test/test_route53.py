@@ -5,21 +5,19 @@ from moto import (
     mock_route53,
 )
 
-from orgcrawler.payload import route53
-from orgcrawler.utils import yamlfmt
 from orgcrawler.cli.utils import setup_crawler
-from .utils import (
+from orgcrawler.mock.org import (
+    MockOrganization,
     ORG_ACCESS_ROLE,
-    SIMPLE_ORG_SPEC,
-    build_mock_org,
 )
+from orgcrawler.payload import route53
 
 
 @mock_sts
 @mock_organizations
 @mock_route53
 def test_list_hosted_zones():
-    org_id, root_id = build_mock_org(SIMPLE_ORG_SPEC)
+    MockOrganization().simple()
     crawler = setup_crawler(ORG_ACCESS_ROLE)
     account = crawler.accounts[0]
     region = crawler.regions[0]
