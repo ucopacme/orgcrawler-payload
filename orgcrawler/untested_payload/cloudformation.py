@@ -11,5 +11,8 @@ def cf_list_stack_sets(region, account):
 def cf_list_stacks(region, account):
     client = boto3.client('cloudformation', region_name=region, **account.credentials)
     response = client.list_stacks()
-    response.pop('ResponseMetadata')
-    return response
+    stacks = response['StackSummaries']
+    while 'NextToken' in response:
+        response = client.list_stacks(NextToken=response['NextToken'])
+        stacks += response['StackSummaries']
+    return dict(liststacks=stacks)
