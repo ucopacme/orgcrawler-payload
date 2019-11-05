@@ -37,8 +37,8 @@ BASIC = [
     'ValidationMethod',
     'RenewalEligibility',
     'RenewalStatus',
-    'InUseBy'
-
+    'InUseBy',
+    'CertificateTransparencyLoggingPreference',
 ]
 
 KEY_PATTERNS = {
@@ -58,6 +58,7 @@ def format_cert(cert, keys):
         return cert
     cert.update(get_validation_options(cert))
     cert.update(get_renewal_status(cert))
+    cert.update(get_transperancy_logging(cert))
     formated = {}
     for k in keys:
         if k in cert and cert[k] is not None:
@@ -94,6 +95,12 @@ def get_renewal_status(cert):
     if 'RenewalSummary' in cert:
         return dict(RenewalStatus=cert['RenewalSummary']['RenewalStatus'])
     return dict(RenewalStatus=None)
+
+
+def get_transperancy_logging(cert):
+    if 'Options' in cert:
+        return dict(CertificateTransparencyLoggingPreference=cert['Options']['CertificateTransparencyLoggingPreference'])
+    return dict(CertificateTransparencyLoggingPreference=None)
 
 
 def get_validation_options(cert):
@@ -139,6 +146,16 @@ def list_expired(region, account, keys='basic'):
     return dict(Certificates=expired)
 
 
+def list_transparency_logging_disabled(region, account, keys='basic'):
+    '''
+    orgcrawler -r OrganizationAccountAccessRole orgcrawler.untested_payload.acm.list_transparency_logging_disabled
+    '''
+    client = boto3.client('acm', region_name=region, **account.credentials)
+    cert_descriptions = get_cert_descriptions(client)
+    logging_disabled = [format_cert(acm, keys) for acm in cert_descriptions if 'Options' in acm and acm['Options']['CertificateTransparencyLoggingPreference'] == 'DISABLED']
+    return dict(Certificates=logging_disabled)
+
+
 def list_renewal_failed(region, account):
     '''
     orgcrawler -r OrganizationAccountAccessRole orgcrawler.untested_payload.acm.list_renewal_failed
@@ -170,6 +187,7 @@ the function below can be duplicated easily with jq:
 some other fun queries:
     cat acm_certs.basic  | jq -r '.[].Regions[].Output.Certificates[] | select(.Status != "ISSUED") | .'
     cat acm_certs.basic  | jq -r '.[].Regions[].Output.Certificates[] | select(.ValidationMethod != "EMAIL") | .'
+    cat acm_certs | jq -r '.[].Regions[].Output.Certificates[] | select(.Options.CertificateTransparencyLoggingPreference == "DISABLED") | .'
 '''
 
 
