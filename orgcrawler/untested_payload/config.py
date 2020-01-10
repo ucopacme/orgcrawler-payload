@@ -22,9 +22,9 @@ def describe_rules(region, account):
     '''
     usage example:
 
-      orgcrawler -r OrganizationAccountAccessRole orgcrawler.payload.describe_rules
+      orgcrawler -r OrganizationAccountAccessRole orgcrawler.untested_payload.config.describe_rules
 
-      orgcrawler -r OrganizationAccountAccessRole --regions us-west-2 orgcrawler.payload.describe_rules | jq -r '.[] | .Account, (.Regions[] | ."us-west-2".ConfigRules[].ConfigRuleName), ""' | tee config_rules_in_accounts.us-west-2
+      orgcrawler -r OrganizationAccountAccessRole --regions us-west-2 orgcrawler.untested_payload.config.describe_rules | jq -r '.[] | .Account, (.Regions[] | ."us-west-2".ConfigRules[].ConfigRuleName), ""' | tee config_rules_in_accounts.us-west-2
     '''
     client = boto3.client('config', region_name=region, **account.credentials)
     response = client.describe_config_rules()
@@ -33,3 +33,25 @@ def describe_rules(region, account):
         response = client.describe_config_rules(NextToken=response['NextToken'])
         rules += response['ConfigRules']
     return dict(ConfigRules=rules)
+
+
+def count_rules(region, account, pattern=None):
+    '''
+    usage example:
+
+      orgcrawler -r OrganizationAccountAccessRole orgcrawler.untested_payload.config.count_rules is3
+      orgcrawler -r awsauth/OrgAdmin --regions us-west-2 orgcrawler.untested_payload.config.count_rules is3 | jq -r '.[] | .Account, .Regions[].Output.Count'
+
+    '''
+    client = boto3.client('config', region_name=region, **account.credentials)
+    response = client.describe_config_rules()
+    rules = response['ConfigRules']
+    while 'NextToken' in response:
+        response = client.describe_config_rules(NextToken=response['NextToken'])
+        rules += response['ConfigRules']
+
+    if pattern is not None:
+        matching_rules = [r for r in rules if r['ConfigRuleName'].startswith(pattern)]
+    else:
+        matching_rules = rules
+    return dict(Count=len(matching_rules))
