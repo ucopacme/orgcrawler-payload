@@ -55,3 +55,19 @@ def count_rules(region, account, pattern=None):
     else:
         matching_rules = rules
     return dict(Count=len(matching_rules))
+
+
+def get_compliance_details(region, account, rule_name):
+    '''
+      orgcrawler -r awsauth/OrgAdmin --regions us-west-2 orgcrawler.untested_payload.config.get_compliance_details COMPLIANCE_RULESET_LATEST_INSTALLED
+      #| jq -r '.[] | .Account, .Regions[].Output.Count'
+
+      botocore.errorfactory.NoSuchConfigRuleException: An error occurred (NoSuchConfigRuleException)
+    '''
+    client = boto3.client('config', region_name=region, **account.credentials)
+    try:
+        response = client.get_compliance_details_by_config_rule(ConfigRuleName=rule_name)
+        response.pop('ResponseMetadata')
+        return response
+    except client.exceptions.NoSuchConfigRuleException as ex:
+        return {}
