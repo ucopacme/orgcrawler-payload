@@ -1,4 +1,5 @@
 import boto3
+from botocore.exceptions import ClientError
 from .config import get_non_compliant_resources
 
 
@@ -22,7 +23,7 @@ def list_vpn_gateways(region, account):
     return response
 
 
-def list_rules_for_non_compliant_sg(region, account, rule_name):
+def list_rules_for_non_compliant_sg(region, account, rule_name, dryrun=True):
     '''
     Query config service for non compliant security groups per given config rule.
     
@@ -46,10 +47,10 @@ def list_rules_for_non_compliant_sg(region, account, rule_name):
     return dict(NonCompliantSecurityGroupRules=sg_rules)
 
 
-def delete_rules_for_non_compliant_default_sg(region, account, execute=False):
+def delete_rules_for_non_compliant_default_sg(region, account, dryrun=True):
     '''
-    Delete rules attacked to non compliant default security groups.
-    This is specific to securityhub rule
+    Delete rules attached to non compliant default security groups.
+    This is specific to securityhub rule: 'securityhub-vpc-default-security-group-closed'
     
       orgcrawler -r awsauth/OrgAdmin --regions us-west-2 orgcrawler.untested_payload.ec2.delete_rules_for_non_compliant_default_sg --accounts net-prod
       orgcrawler -r awsauth/OrgAdmin --regions us-west-2 orgcrawler.untested_payload.ec2.delete_rules_for_non_compliant_default_sg execute=True --accounts net-prod
@@ -72,7 +73,7 @@ def delete_rules_for_non_compliant_default_sg(region, account, execute=False):
             sg_has_eni.append(group_id)
         else:
             sg_has_no_eni.append(group_id)
-    if not execute:
+    if dryrun:
         return dict(SecurityGroupEniStatus=dict(
                 HasEni=sg_has_eni,
                 HasNoEni=sg_has_no_eni,
@@ -81,7 +82,16 @@ def delete_rules_for_non_compliant_default_sg(region, account, execute=False):
     else:
         for sg_id in sg_has_no_eni:
             sg = ec2.SecurityGroup(sg_id)
-            sg.revoke_ingress(IpPermissions=sg.ip_permissions,DryRun=True)
-            sg.revoke_egress(IpPermissions=sg.ip_permissions_egress,DryRun=True)
+            sg.load()
+            try:
+                sg.revoke_ingress(IpPermissions=sg.ip_permissions)
+            except ClientError as e:
+                print("Account: {}\nError code: {}\nMessage: {}\nSG Id: {}".format(
+                    account.name, e.response['Error']['Code'], e.response['Error']['Message'], sg_id))
+            try:
+                sg.revoke_egress(IpPermissions=sg.ip_permissions_egress)
+            except ClientError as e:
+                print("Account: {}\nError code: {}\nMessage: {}\nSG Id: {}".format(
+                    account.name, e.response['Error']['Code'], e.response['Error']['Message'], sg_id))
 
         return dict(CleanUpSecurityGroups=sg_has_no_eni)
